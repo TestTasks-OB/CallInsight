@@ -1,7 +1,10 @@
 from flask import Flask, request, jsonify
 from flasgger import Swagger
 from dotenv import load_dotenv
-from .transcription import getTranscription
+from loguru import logger
+from src.transcription import getTranscription
+from src.chains.augmentChain import AugmentChain
+from src.chains.summaryActionsChain import SummaryActionsChain
 load_dotenv('../.env')
 
 app = Flask(__name__)
@@ -35,6 +38,15 @@ def upload_audio():
     
     try:
       result = getTranscription(audio_file)
+      augm = AugmentChain()
+      augm.run(text=result.text)
+      summ = SummaryActionsChain()
+      summ.run(text=augm.data['text'])
+      logger.info(augm)
+      logger.info(augm.data)
+      logger.info(result.text)
+      logger.info(summ)
+      logger.info(summ.data)
     except Exception as e:  
       return jsonify({'error':str(e)}), 429
     if audio_file.filename == '':
@@ -44,5 +56,6 @@ def upload_audio():
     
     return jsonify({'message': 'Audio file uploaded successfully'}), 200
 
-if __name__ == '__main__':
-    app.run(debug=True)
+def main():
+    app.run()
+     

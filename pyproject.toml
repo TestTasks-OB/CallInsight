@@ -14,7 +14,12 @@ flask = "^3.0.2"
 flasgger = "^0.9.7.1"
 loguru = "^0.7.2"
 python-dotenv = "^1.0.1"
+langchain-community = "^0.0.24"
+langchain-openai = "^0.0.8"
  
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+run-flask="src.app:main" #eq to poetry run python -m src.app   
