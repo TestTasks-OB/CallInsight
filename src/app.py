@@ -2,9 +2,8 @@ from flask import Flask, request, jsonify
 from flasgger import Swagger
 from dotenv import load_dotenv
 from loguru import logger
-from src.transcription import getTranscription
-from src.chains.augmentChain import AugmentChain
-from src.chains.summaryActionsChain import SummaryActionsChain
+from src.augmentTranscription import augmentTranscription
+from src.saveTranscription import saveToFile
 load_dotenv('../.env')
 
 app = Flask(__name__)
@@ -36,25 +35,17 @@ def upload_audio():
     
     audio_file = request.files['audio']
     
+    if audio_file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400 
     try:
-      result = getTranscription(audio_file)
-      augm = AugmentChain()
-      augm.run(text=result.text)
-      summ = SummaryActionsChain()
-      summ.run(text=augm.data['text'])
-      logger.info(augm)
-      logger.info(augm.data)
-      logger.info(result.text)
-      logger.info(summ)
-      logger.info(summ.data)
+      result = augmentTranscription(audio_file)  
+      file_name = audio_file.filename.rsplit('.', 1)[0].lower()
+      logger.info(result)
+      saveToFile(file_name, result['result']['summary'])
+      return jsonify(result),200
     except Exception as e:  
       return jsonify({'error':str(e)}), 429
-    if audio_file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
-    
-    #audio_file.save(audio_file.filename)
-    
-    return jsonify({'message': 'Audio file uploaded successfully'}), 200
+     
 
 def main():
     app.run()

@@ -18,7 +18,7 @@ class SummaryActionsChain(ChainCore):
         self.chain = LLMChain(llm=self.llm, prompt=prompt , callback_manager=self.callback_manager,return_final_only=False)
         self.data = {}
 
-    @openai_callback_decorator(tag='augment')
+    @openai_callback_decorator(tag='summary')
     def run(self, text)->dict:
         result = self.chain.invoke(text) 
         self.data.update(result) 
